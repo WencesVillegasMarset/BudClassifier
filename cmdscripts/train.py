@@ -28,11 +28,11 @@ def run(args):
     model = utils.build()
     class_weight = {0: 1.,
                     1: cw}
-    model.fit(x=train, y=train_label,epochs=epochs, batch_size=bs,class_weight=class_weight)
+    model.fit(x=train, y=train_label,epochs=epochs, batch_size=bs,class_weight=class_weight,shuffle=True)
     model.save(os.path.join(h5file))
 
 def main():
-    parser = argparse.ArgumentParser(description="Train a default MobileNet bynary classification model")
+    parser = argparse.ArgumentParser(description="Train a default MobileNet binary classification model")
     parser.add_argument("-src",help="absolute path of training csv (imagepath, label)" ,dest="src", type=str, required=True)
     parser.add_argument("-ep",help="number of epochs to train on" ,dest="epochs", type=int, required=True)
     parser.add_argument('-bs',help="batch size" ,dest="bs", type=int, required=True)

@@ -26,8 +26,9 @@ def run(args):
         print('Prediction is: ' + str(prediction))
     else:
         import pandas as pd
-        csv = pd.read_csv(source_path)
-        image_list = csv[1].tolist()
+        csv = pd.read_csv(source_path, header=None)
+        print(csv.columns)
+        image_list = csv[0].tolist()
         pred_list = []
         label_list = []
         for img in image_list:
