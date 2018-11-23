@@ -29,3 +29,18 @@ def build():
               loss='binary_crossentropy',
               metrics=['accuracy'])
     return model
+def build_alternative():
+    from keras.applications import VGG16
+    from keras.layers import Dense, Flatten
+    from keras.models import Model
+    from keras.optimizers import SGD
+    mobilenet = VGG16(weights='imagenet',input_shape=(224,224,3), include_top=False)
+    flatten = Flatten()(mobilenet.output)
+    fc1 = Dense(1024, activation='relu')(flatten)
+    final = Dense(1,activation='sigmoid')(fc1)
+    model = Model(mobilenet.input, final)
+    optim = SGD(lr=0.001, momentum=0.9)
+    model.compile(optimizer=optim,
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+    return model
