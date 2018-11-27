@@ -31,51 +31,42 @@ def run(args):
     img_path = os.path.join('/home','wvillegas','dataset-mask','dataset_resize', 'images_resize')
     masks_path = os.path.join('/home','wvillegas','dataset-mask','dataset_resize', 'masks_resize')
 
-    batch_size = 1
+    batch_size = 4
 
     train_generator = DataGeneratorMobileNet(batch_size=batch_size,img_path=img_path,
                                     labels=labels,list_IDs=partition['train'],n_channels=3,
-                                    n_channels_label=1,shuffle=True,mask_path=masks_path)
-    valid_generator = DataGeneratorMobileNet(batch_size=batch_size,img_path=img_path,
-                                    labels=labels,list_IDs=partition['test'],n_channels=3,
                                     n_channels_label=1,shuffle=True,mask_path=masks_path)
     from keras.applications import MobileNet
     from keras.layers import Conv2DTranspose,Conv2D,Add
     from keras import Model
     net = MobileNet(include_top=False, weights=None)
     net.load_weights('/home/wvillegas/DLProjects/BudClassifier/cmdscripts/modelosV2/mobilenet_weights_detection.h5', by_name=True)
-
+    
     for layer in net.layers:
         layer.trainable = True
 
     predict = Conv2D(filters=1,kernel_size=1,strides=1)(net.output)
-
-    deconv2 = Conv2DTranspose(filters=1,kernel_size=4,strides=2, padding='same')(predict)
-
+    deconv2 = Conv2DTranspose(filters=1,kernel_size=4,strides=2, padding='same', use_bias=False)(predict)
     pred_conv_dw_11_relu = Conv2D(filters=1,kernel_size=1,strides=1)(net.get_layer('conv_dw_11_relu').output)
-
     fuse1 = Add()([deconv2, pred_conv_dw_11_relu])
-
     pred_conv_pw_5_relu = Conv2D(filters=1,kernel_size=1,strides=1)(net.get_layer('conv_pw_5_relu').output)
-
-    deconv2fuse1 = Conv2DTranspose(filters=1,kernel_size=4,strides=2, padding='same')(fuse1)
-
+    deconv2fuse1 = Conv2DTranspose(filters=1,kernel_size=4,strides=2, padding='same', use_bias=False)(fuse1)
     fuse2 = Add()([deconv2fuse1, pred_conv_pw_5_relu])
-
-    deconv8 = Conv2DTranspose(filters=1,kernel_size=16,strides=8, padding='same')(fuse2)
+    deconv8 = Conv2DTranspose(filters=1,kernel_size=16,strides=8, padding='same', use_bias=False)(fuse2)
+    
     fcn = Model(inputs=net.input,outputs=deconv8)
+    
     from keras.optimizers import SGD
-    sgd = SGD(lr=lr,momentum=momentum,decay=decay)
-    fcn.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
+#     sgd = SGD(lr=lr,momentum=momentum,decay=decay)
+    fcn.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    history = fcn.fit_generator(generator=train_generator,validation_data=valid_generator,
-                                use_multiprocessing=True,workers=6, epochs=epochs)
+    history = fcn.fit_generator(generator=train_generator, use_multiprocessing=True,workers=6, epochs=epochs)
     fcn.save(os.path.join(h5file))
     test_csv = pd.DataFrame({'x':X_test,
                         'y': Y_test})
     test_csv.to_csv(test_set_path,header=None)
-    test_csv = pd.DataFrame(history)
-    test_csv.to_csv(hist.history)
+    test_csv = pd.DataFrame(hist.history)
+    test_csv.to_csv(hist)
 
 
 def main():
