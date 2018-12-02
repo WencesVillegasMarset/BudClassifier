@@ -57,8 +57,8 @@ def run(args):
     fcn = Model(inputs=net.input,outputs=deconv8)
     
     from keras.optimizers import SGD
-#     sgd = SGD(lr=lr,momentum=momentum,decay=decay)
-    fcn.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    sgd = SGD(lr=lr,momentum=momentum,decay=decay)
+    fcn.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
     history = fcn.fit_generator(generator=train_generator, use_multiprocessing=True,workers=6, epochs=epochs)
     fcn.save(os.path.join(h5file))
