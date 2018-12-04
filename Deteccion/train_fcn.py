@@ -65,7 +65,7 @@ def run(args):
     test_csv = pd.DataFrame({'x':X_test,
                         'y': Y_test})
     test_csv.to_csv(test_set_path,header=None)
-    test_csv = pd.DataFrame(hist.history)
+    test_csv = pd.DataFrame(history.history)
     test_csv.to_csv(hist)
 
 

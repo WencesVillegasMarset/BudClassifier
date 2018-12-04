@@ -32,7 +32,6 @@ class DataGeneratorMobileNet(Sequence):
             temp = cv2.resize(temp, (0, 0), fx=0.5, fy=0.5)
 
             X = np.empty((self.batch_size,temp.shape[0],temp.shape[1], self.n_channels))
-            temp = cv2.normalize(temp, temp, 0, 255, cv2.NORM_MINMAX)
             X[index,] = temp
             #store mask array
             temp = cv2.imread(path.join(self.mask_path,self.labels[id]))
@@ -43,6 +42,7 @@ class DataGeneratorMobileNet(Sequence):
             temp = np.expand_dims(temp, axis=2)
             y[index,] = temp
         return X, y
+
     def __len__(self):
         return int(np.floor(len(self.list_IDs) / self.batch_size))
 
